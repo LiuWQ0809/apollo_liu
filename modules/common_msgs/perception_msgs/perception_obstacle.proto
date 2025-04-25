@@ -235,6 +235,38 @@ message PerceptionWaste {
   optional DebugMessage msg = 14;
 }
 
+message OccStatus {
+  optional int32 occ_id = 1;
+  enum OccType {
+    CAR = 1;
+    TRUCK = 2;
+    TRAILER = 3;
+    BUS = 4;
+    CONSTRUCTION_VEHICLE = 5;
+    BICYCLE = 6;
+    MOTORCYCLE = 7;
+    PEDESTRIAN = 8;
+    TRAFFIC_CONE = 9;
+    BARRIER = 10;
+    DRIVEABLE_SURFACE = 11;
+    OTHER_FLAT = 12;
+    SIDEWALK = 13;
+    TERRAIN = 14;
+    MANMADE = 15;
+    VEGETATION = 16;
+    UNKNOWN = 17;
+  }
+  optional OccType occ_type = 2;
+  optional double occ_score = 3;
+  optional double occ_confidence = 4;
+  optional double occ_timestamp = 5;
+  optional double occ_size = 6;
+  optional double occ_x = 7;
+  optional double occ_y = 8;
+  optional double occ_z = 9;
+  optional double occ_theta = 10;
+}
+
 message PerceptionObstacles {
   repeated PerceptionObstacle perception_obstacle = 1;  // An array of obstacles
   optional apollo.common.Header header = 2;             // Header
@@ -242,6 +274,7 @@ message PerceptionObstacles {
   optional LaneMarkers lane_marker = 4;
   optional CIPVInfo cipv_info = 5;  // Closest In Path Vehicle (CIPV)
   repeated PerceptionWaste perception_waste = 6;  // An array of wastes
+  repeated OccStatus occs = 7;  // An array of occ
 }
 
 message PerceptionEdgeInfo {

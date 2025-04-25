@@ -60,10 +60,15 @@ class CameraDetectionOccComponent final : public cyber::Component<> {
 
   void CameraToWorldCoor(const Eigen::Affine3d& camera2world,
                          std::vector<base::ObjectPtr>* objs);
+  void OccCameraToWorldCoor(const Eigen::Affine3d& camera2world,
+                         std::vector<OccDataPtr> *occ_status);
   int ConvertObjectToPb(const base::ObjectPtr& object_ptr,
                         PerceptionObstacle* pb_msg);
+  int ConvertOccToPb(const OccDataPtr& occ_ptr,
+                        OccStatus* pb_msg);
   int MakeProtobufMsg(double msg_timestamp, int seq_num,
                       const std::vector<base::ObjectPtr>& objects,
+                      const std::vector<OccDataPtr>& occ_status,
                       PerceptionObstacles* obstacles);
   bool LoadCameraExtrinsic(const std::string& file_path,
                            Eigen::Affine3d* camera_extrinsic);

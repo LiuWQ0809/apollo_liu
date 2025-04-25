@@ -82,7 +82,9 @@ class BEVFORMERObstacleDetector : public BaseObstacleDetector {
                   const float *outputs_coords,
                   std::vector<base::ObjectPtr> *objects);
 
-  bool GetOccResults(CameraFrame *frame, const float *outputs_occupancy);
+  bool GetOccResults(CameraFrame *frame, const float *outputs_occupancy, 
+                     std::vector<OccDataPtr> *occ_status);
+  bool SaveOccResults(CameraFrame *frame, const float *outputs_occupancy);
 
  private:
   int height_;

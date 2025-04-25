@@ -1,6 +1,7 @@
 import numpy as np
-from mayavi import mlab
+# from mayavi import mlab
 import os 
+import pdb
 
 def generate_the_ego_car():
     ego_range = [-1.5, -0.5, -1.5, 0.5, 1, 0]
@@ -27,6 +28,7 @@ def generate_the_ego_car():
     return ego_dict
 
 def obtain_points_label(occ):
+    # pdb.set_trace()
     occ_index, occ_cls = occ[:, 0], occ[:, 1]
     occ = np.ones(voxel_num, dtype=np.int8)*11
     occ[occ_index[:]] = occ_cls  # (voxel_num)
@@ -43,6 +45,8 @@ def obtain_points_label(occ):
     
     points = np.stack(points)
     points_label = occ_cls
+
+    pdb.set_trace()
 
 
     return points, points_label
@@ -121,9 +125,11 @@ def visualize_occ(points, labels, ego_dict):
         scene.scene.render()
 
     mlab.show()
+    # mlab.savefig('3d_plot.png')
 
 if __name__ == '__main__':
-    occ_path = "data/occ_results/1538984234.677893.bin"
+    occ_path = "/home/liuwq/work/apollo/modules/perception/camera_detection_occupancy/data/occ_results/1535489297.428113.bin"
+    # export DISPLAY=:0
 
     # default setting of the data info
     num_classes = 16
@@ -135,6 +141,8 @@ if __name__ == '__main__':
     occ_ydim = int((point_cloud_range[4] - point_cloud_range[1]) / occupancy_size[1])
     occ_zdim = int((point_cloud_range[5] - point_cloud_range[2]) / occupancy_size[2])
     voxel_num = occ_xdim*occ_ydim*occ_zdim
+    # pdb.set_trace()
+    
     
     if occ_path.split('.')[-1] == '.npy':
         occ = np.load(occ_path)

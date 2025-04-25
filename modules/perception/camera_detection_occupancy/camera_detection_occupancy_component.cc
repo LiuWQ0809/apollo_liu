@@ -321,6 +321,22 @@ void CameraDetectionOccComponent::CameraToWorldCoor(
   }
 }
 
+void CameraDetectionOccComponent::OccCameraToWorldCoor(
+    const Eigen::Affine3d &camera2world, std::vector<OccDataPtr> *occ_status) {
+  for (auto &occ : *occ_status){
+    Eigen::Vector3d local_polygon_point =
+        Eigen::Vector3f(occ->occ_x, occ->occ_y, occ->occ_z).cast<double>();
+    Eigen::Vector3d world_polygon_point = camera2world * local_polygon_point;
+    occ->occ_x = world_polygon_point[0];
+    occ->occ_y = world_polygon_point[1];
+    occ->occ_z = world_polygon_point[2];
+    // AERROR << " " << occ->occ_x
+    //       << " " << occ->occ_y
+    //       << " " << occ->occ_z
+    //       << " ";
+  }
+}
+
 int CameraDetectionOccComponent::ConvertObjectToPb(
     const base::ObjectPtr &object_ptr, PerceptionObstacle *pb_msg) {
   if (!object_ptr || !pb_msg) {
@@ -367,9 +383,34 @@ int CameraDetectionOccComponent::ConvertObjectToPb(
   return cyber::SUCC;
 }
 
+int CameraDetectionOccComponent::ConvertOccToPb(
+    const OccDataPtr& occ_ptr, OccStatus *pb_msg) {
+  if (!occ_ptr || !pb_msg) {
+    return cyber::FAIL;
+  }
+
+  pb_msg->set_occ_id(occ_ptr->occ_id);
+  // pb_msg->set_theta(object_ptr->theta);
+  pb_msg->set_occ_confidence(occ_ptr->occ_confidence);
+
+  pb_msg->set_occ_x(occ_ptr->occ_x);
+  pb_msg->set_occ_y(occ_ptr->occ_y);
+  pb_msg->set_occ_z(occ_ptr->occ_z);
+  // pb_msg->set_occ_size(occ_ptr->occ_size);
+
+  pb_msg->set_occ_type(static_cast<OccStatus::OccType>(occ_ptr->occ_type));
+  // AERROR << " " << occ_ptr->occ_x
+  //         << " " << occ_ptr->occ_y
+  //         << " " << occ_ptr->occ_z
+  //         << " ";
+
+  return cyber::SUCC;
+}
+
 int CameraDetectionOccComponent::MakeProtobufMsg(
     double msg_timestamp, int seq_num,
     const std::vector<base::ObjectPtr> &objects,
+    const std::vector<OccDataPtr> &occ_status,
     PerceptionObstacles *obstacles) {
   double publish_time = apollo::cyber::Clock::NowInSeconds();
   auto header = obstacles->mutable_header();
@@ -388,6 +429,15 @@ int CameraDetectionOccComponent::MakeProtobufMsg(
     PerceptionObstacle *obstacle = obstacles->add_perception_obstacle();
     if (ConvertObjectToPb(obj, obstacle) != cyber::SUCC) {
       AERROR << "ConvertObjectToPb failed, Object:" << obj->ToString();
+      return cyber::FAIL;
+    }
+
+  }
+
+  for (const auto &occ : occ_status) {
+    OccStatus *occ_pb = obstacles->add_occs();
+    if (ConvertOccToPb(occ, occ_pb) != cyber::SUCC) {
+      AERROR << "ConvertOccToPb failed";
       return cyber::FAIL;
     }
   }
@@ -450,6 +500,7 @@ bool CameraDetectionOccComponent::OnReceiveImage(
   }
 
   CameraToWorldCoor(lidar2world_trans, &frame_ptr_->detected_objects);
+  // OccCameraToWorldCoor(lidar2world_trans, &frame_ptr_->occ_status);
 
   // Tracker
   // Tracker: converter
@@ -468,7 +519,7 @@ bool CameraDetectionOccComponent::OnReceiveImage(
 
   std::shared_ptr<PerceptionObstacles> out_message(new (std::nothrow)
                                                        PerceptionObstacles);
-  if (MakeProtobufMsg(msg_timestamp, seq_num_, frame_ptr_->detected_objects,
+  if (MakeProtobufMsg(msg_timestamp, seq_num_, frame_ptr_->detected_objects, frame_ptr_->occ_status,
                       out_message.get()) != cyber::SUCC) {
     AERROR << "MakeProtobufMsg failed ts: " << msg_timestamp;
     return false;

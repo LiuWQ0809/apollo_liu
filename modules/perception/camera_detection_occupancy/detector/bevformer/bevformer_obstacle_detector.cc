@@ -527,12 +527,62 @@ void BEVFORMERObstacleDetector::GetObjects(
 }
 
 bool BEVFORMERObstacleDetector::GetOccResults(CameraFrame *frame,
+                                              const float *outputs_occupancy,
+                                              std::vector<OccDataPtr> *occ_status) {
+  if (frame == nullptr || occ_status == nullptr) {
+    return false;
+  }
+  occ_status->clear();
+  int valid_occ_point = 0;
+  for (int voxel_index = 0; voxel_index < num_voxels_; voxel_index++) {
+    float max_prob = 0.0;
+    int class_pred = num_classes_occ_ + 1;
+    for (int class_index = 0; class_index < num_classes_occ_; class_index++) {
+      float class_prob =
+          outputs_occupancy[voxel_index * num_classes_occ_ + class_index];
+      if (class_prob > max_prob) {
+        max_prob = class_prob;
+        class_pred = class_index;
+      }
+    }
+    OccDataPtr occ = nullptr;
+    occ.reset(new OccData);
+    if (max_prob >= occ_threshold_) {
+      int x = voxel_index % occ_x_grid_;
+      int y = (voxel_index / occ_x_grid_) % occ_x_grid_;
+      int z = voxel_index / (occ_x_grid_ * occ_x_grid_);
+      float point_x = (x + 0.5f) / occ_x_grid_ * (occ_xmax_ - occ_xmin_) + occ_xmin_;
+      float point_y = (y + 0.5f) / occ_y_grid_ * (occ_ymax_ - occ_ymin_) + occ_ymin_;
+      float point_z = (z + 0.5f) / occ_z_grid_ * (occ_zmax_ - occ_zmin_) + occ_zmin_;
+      occ->occ_id = voxel_index;
+      occ->occ_x = point_x;
+      occ->occ_y = point_y;
+      occ->occ_z = point_z;
+      occ->occ_size = voxel_size_;
+      occ->occ_confidence = max_prob;
+      occ->occ_type = kIndex2OccName.at(class_pred);
+      valid_occ_point += 1;
+      occ_status->push_back(occ);
+    }
+  }
+  AINFO << "number of valid occ voxels: " << valid_occ_point;
+
+
+  return true;
+}
+
+
+bool BEVFORMERObstacleDetector::SaveOccResults(CameraFrame *frame,
                                               const float *outputs_occupancy) {
   if (frame == nullptr) {
     return false;
   }
   occ_results_.clear();
   int valid_occ_point = 0;
+  std::vector<double> xs;
+  std::vector<double> ys;
+  std::vector<double> zs;
+
   for (int voxel_index = 0; voxel_index < num_voxels_; voxel_index++) {
     float max_prob = 0.0;
     int class_pred = num_classes_occ_ + 1;
@@ -546,6 +596,15 @@ bool BEVFORMERObstacleDetector::GetOccResults(CameraFrame *frame,
     }
     if (max_prob >= occ_threshold_) {
       occ_results_.push_back(std::make_pair(voxel_index, class_pred));
+      int x = voxel_index % occ_x_grid_;
+      int y = (voxel_index / occ_x_grid_) % occ_x_grid_;
+      int z = voxel_index / (occ_x_grid_ * occ_x_grid_);
+      float point_x = (x + 0.5f) / occ_x_grid_ * (occ_xmax_ - occ_xmin_) + occ_xmin_;
+      float point_y = (y + 0.5f) / occ_y_grid_ * (occ_ymax_ - occ_ymin_) + occ_ymin_;
+      float point_z = (z + 0.5f) / occ_z_grid_ * (occ_zmax_ - occ_zmin_) + occ_zmin_;
+      xs.push_back(point_x);
+      ys.push_back(point_y);
+      zs.push_back(point_z);
       valid_occ_point += 1;
     }
   }
@@ -562,6 +621,12 @@ bool BEVFORMERObstacleDetector::GetOccResults(CameraFrame *frame,
   for (int i = 0; i < occ_results_.size(); i++) {
     out_stream << occ_results_.at(i).first << " " << occ_results_.at(i).second
                 << " ";
+    AINFO << occ_results_.at(i).first << " " << occ_results_.at(i).second
+                << " " << xs.at(i)
+                << " " << ys.at(i)
+                << " " << zs.at(i)
+                << " ";
+
   }
   out_stream.close();
 
@@ -612,13 +677,14 @@ bool BEVFORMERObstacleDetector::Detect(CameraFrame *frame) {
               &frame->detected_objects);
   PERF_BLOCK_END
 
-  PERF_BLOCK("stage bev get occ")
+  auto outputs_occupancy =
+      net_->get_blob(model_outputs[occ_blob_index_].name());
+  const float *outputs_occupancy_ptr = outputs_occupancy->cpu_data();
+  GetOccResults(frame, outputs_occupancy_ptr, &frame->occ_status);
   if (model_param_.save_occ_result()) {
-    auto outputs_occupancy =
-        net_->get_blob(model_outputs[occ_blob_index_].name());
-    const float *outputs_occupancy_ptr = outputs_occupancy->cpu_data();
-    GetOccResults(frame, outputs_occupancy_ptr);
+    SaveOccResults(frame, outputs_occupancy_ptr);
   }
+  PERF_BLOCK("stage bev get occ")
   PERF_BLOCK_END
 
   Nuscenes2Apollo(&frame->detected_objects);
