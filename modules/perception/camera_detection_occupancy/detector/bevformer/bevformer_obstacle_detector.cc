@@ -579,9 +579,6 @@ bool BEVFORMERObstacleDetector::SaveOccResults(CameraFrame *frame,
   }
   occ_results_.clear();
   int valid_occ_point = 0;
-  std::vector<double> xs;
-  std::vector<double> ys;
-  std::vector<double> zs;
 
   for (int voxel_index = 0; voxel_index < num_voxels_; voxel_index++) {
     float max_prob = 0.0;
@@ -602,9 +599,6 @@ bool BEVFORMERObstacleDetector::SaveOccResults(CameraFrame *frame,
       float point_x = (x + 0.5f) / occ_x_grid_ * (occ_xmax_ - occ_xmin_) + occ_xmin_;
       float point_y = (y + 0.5f) / occ_y_grid_ * (occ_ymax_ - occ_ymin_) + occ_ymin_;
       float point_z = (z + 0.5f) / occ_z_grid_ * (occ_zmax_ - occ_zmin_) + occ_zmin_;
-      xs.push_back(point_x);
-      ys.push_back(point_y);
-      zs.push_back(point_z);
       valid_occ_point += 1;
     }
   }
@@ -621,11 +615,7 @@ bool BEVFORMERObstacleDetector::SaveOccResults(CameraFrame *frame,
   for (int i = 0; i < occ_results_.size(); i++) {
     out_stream << occ_results_.at(i).first << " " << occ_results_.at(i).second
                 << " ";
-    AINFO << occ_results_.at(i).first << " " << occ_results_.at(i).second
-                << " " << xs.at(i)
-                << " " << ys.at(i)
-                << " " << zs.at(i)
-                << " ";
+    AINFO << occ_results_.at(i).first << " " << occ_results_.at(i).second;
 
   }
   out_stream.close();
