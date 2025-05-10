@@ -49,6 +49,7 @@ class CameraDetectionOccComponent final : public cyber::Component<> {
    * @return false
    */
   bool Init() override;
+  bool OfflineOnReceiveImage(const std::shared_ptr<drivers::Image>& msg);
 
  private:
   bool InitTransformWrapper(const CameraDetectionBEV& detection_param);

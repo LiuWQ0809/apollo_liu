@@ -110,6 +110,6 @@ occ_zmax: 3.0
 voxel_size: 0.5
 
 location_dist_threshold: 10.0
-save_occ_result: false 
+save_occ_result: true 
 occ_save_path: "/apollo_workspace/modules/perception/camera_detection_occupancy/data/occ_results"
 occ_threshold: 0.25

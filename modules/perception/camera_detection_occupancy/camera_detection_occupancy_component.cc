@@ -445,6 +445,59 @@ int CameraDetectionOccComponent::MakeProtobufMsg(
   return cyber::SUCC;
 }
 
+bool CameraDetectionOccComponent::OfflineOnReceiveImage(
+    const std::shared_ptr<drivers::Image> &msg) {
+  const double msg_timestamp = msg->measurement_time() + timestamp_offset_;
+
+  for (size_t i = 0; i < readers_.size(); ++i) {
+    readers_[i]->Observe();
+    const auto &camera_msg = readers_[i]->GetLatestObserved();
+    if (camera_msg == nullptr) {
+      AERROR << "Failed to get camera message, camera_name: "
+             << msg->frame_id();
+      return false;
+    }
+    frame_ptr_->data_provider[i]->FillImageData(
+        image_height_, image_width_,
+        reinterpret_cast<const uint8_t *>(camera_msg->data().data()),
+        camera_msg->encoding());
+  }
+
+  frame_ptr_->timestamp = msg_timestamp;
+  ++frame_ptr_->frame_id;
+
+  // Detect
+  PERF_BLOCK("foreground objects detection")
+  detector_->Detect(frame_ptr_.get());
+  PERF_BLOCK_END
+
+  // Get sensor to world pose from TF
+  Eigen::Affine3d lidar2world_trans;
+  if (!trans_wrapper_->GetSensor2worldTrans(msg_timestamp,
+                                            &lidar2world_trans)) {
+    const std::string err_str =
+        absl::StrCat("failed to get camera to world pose, ts: ", msg_timestamp,
+                     " camera_name: ", msg->frame_id());
+    AERROR << err_str;
+    return false;
+  }
+
+  CameraToWorldCoor(lidar2world_trans, &frame_ptr_->detected_objects);
+
+  std::shared_ptr<PerceptionObstacles> out_message(new (std::nothrow)
+                                                       PerceptionObstacles);
+  if (MakeProtobufMsg(msg_timestamp, seq_num_, frame_ptr_->detected_objects, frame_ptr_->occ_status,
+                      out_message.get()) != cyber::SUCC) {
+    AERROR << "MakeProtobufMsg failed ts: " << msg_timestamp;
+    return false;
+  }
+  seq_num_++;
+  // Send msg
+  writer_->Write(out_message);
+
+  return true;
+}
+
 bool CameraDetectionOccComponent::OnReceiveImage(
     const std::shared_ptr<drivers::Image> &msg) {
   const double msg_timestamp = msg->measurement_time() + timestamp_offset_;

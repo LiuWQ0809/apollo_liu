@@ -93,6 +93,19 @@ apollo_cc_library(
     ],
 )
 
+apollo_cc_binary(
+    name = "main_offline_tool",
+    srcs = ["main_offline_tool.cc"],
+    deps = [
+        ":camera_detection_occupancy_component",
+        "//modules/common_msgs/sensor_msgs:sensor_image_cc_proto",
+        "//modules/common_msgs/perception_msgs:perception_obstacle_cc_proto",
+        "//cyber",
+        "//modules/perception/camera_detection_occupancy/proto:camera_detection_occupancy_cc_proto",
+    ],
+    copts = ["-std=c++14"],
+)
+
 apollo_package()
 
 cpplint()
