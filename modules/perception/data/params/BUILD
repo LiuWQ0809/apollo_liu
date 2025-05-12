@@ -1,14 +1,1 @@
-load("//tools:apollo_package.bzl", "apollo_package")
-load("//tools:cpplint.bzl", "cpplint")
-
-package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "data_files",
-    srcs = glob([
-        "*",
-    ])
-)
-
-apollo_package()
-cpplint()
+/opt/apollo/neo/share/modules/perception/data/params/BUILD

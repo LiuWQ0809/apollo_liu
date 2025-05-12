@@ -53,6 +53,24 @@ DEFINE_string(detector_name, "BEVFORMERObstacleDetector", "detector name");
 DEFINE_string(off_obs_sensor_intrinsic_path,
               "/apollo/modules/perception/data/params/",
               "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name0,
+              "/apollo_workspace/data/camera_data/test1/0.png",
+              "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name1,
+              "/apollo_workspace/data/camera_data/test1/1.png",
+              "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name2,
+              "/apollo_workspace/data/camera_data/test1/2.png",
+              "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name3,
+              "/apollo_workspace/data/camera_data/test1/3.png",
+              "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name4,
+              "/apollo_workspace/data/camera_data/test1/4.png",
+              "The intrinsics/extrinsics dir.");
+DEFINE_string(file_name5,
+              "/apollo_workspace/data/camera_data/test1/5.png",
+              "The intrinsics/extrinsics dir.");
 
 namespace apollo {
 namespace perception {
@@ -187,12 +205,12 @@ bool InitDataProvider() {
 
 bool FillImage() {
   // Read image from file_name
-  std::string file_name1 = "/apollo_workspace/data/camera_data/test1/0.png";
-  std::string file_name2 = "/apollo_workspace/data/camera_data/test1/1.png";
-  std::string file_name3 = "/apollo_workspace/data/camera_data/test1/2.png";
-  std::string file_name4 = "/apollo_workspace/data/camera_data/test1/3.png";
-  std::string file_name5 = "/apollo_workspace/data/camera_data/test1/4.png";
-  std::string file_name6 = "/apollo_workspace/data/camera_data/test1/5.png";
+  std::string file_name1 = FLAGS_file_name3;
+  std::string file_name2 = FLAGS_file_name2;
+  std::string file_name3 = FLAGS_file_name4;
+  std::string file_name4 = FLAGS_file_name0;
+  std::string file_name5 = FLAGS_file_name0;
+  std::string file_name6 = FLAGS_file_name1;
   cv::Mat image0 = cv::imread(file_name1);
   cv::resize(image0, image0, cv::Size(1600, 900), 0, 0);
   cv::Mat image1 = cv::imread(file_name2);
@@ -275,6 +293,5 @@ int main(int argc, char* argv[]) {
       "command line brew\n"
       "Usage: camera_benchmark <args>\n");
   apollo::perception::camera::TestDetection();
-  AERROR << "Done ";
   return 0;
 }
