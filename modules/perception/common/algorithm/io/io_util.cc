@@ -59,7 +59,7 @@ bool ReadPoseFile(const std::string &filename, Eigen::Affine3d *pose,
 bool LoadBrownCameraIntrinsic(const std::string &yaml_file,
                               base::BrownCameraDistortionModel *model) {
   if (!PathExists(yaml_file) || model == nullptr) {
-    AERROR << "yaml file pass nonexist: " << yaml_file
+    AERROR << "yaml file pass nonexist: " << yaml_file;
     return false;
   }
 

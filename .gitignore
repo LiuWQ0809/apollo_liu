@@ -84,4 +84,6 @@ tools/FlameGraph
 # dv plugins
 modules/studio_connector
 
+# model
+
 #WORKSPACE

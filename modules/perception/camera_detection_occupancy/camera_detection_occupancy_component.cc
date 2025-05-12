@@ -469,6 +469,7 @@ bool CameraDetectionOccComponent::OfflineOnReceiveImage(
   // Detect
   PERF_BLOCK("foreground objects detection")
   detector_->Detect(frame_ptr_.get());
+  AERROR << "Done 4";
   PERF_BLOCK_END
 
   // Get sensor to world pose from TF

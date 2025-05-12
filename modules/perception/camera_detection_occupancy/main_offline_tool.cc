@@ -255,8 +255,8 @@ bool TestDetection() {
   detector->Init(init_options);
 
   ACHECK(FillImage());
-  ACHECK(detector->Detect(frame_ptr_.get()));
-  PERF_BLOCK_END
+  detector->Detect(frame_ptr_.get());
+  AERROR << "Done ";
 
   return true;
 }
@@ -275,5 +275,6 @@ int main(int argc, char* argv[]) {
       "command line brew\n"
       "Usage: camera_benchmark <args>\n");
   apollo::perception::camera::TestDetection();
+  AERROR << "Done ";
   return 0;
 }
