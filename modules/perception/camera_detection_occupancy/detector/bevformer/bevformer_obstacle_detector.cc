@@ -271,6 +271,9 @@ bool BEVFORMERObstacleDetector::ImagePreprocessGPU(
     int dst_width = roi_width + left_pad + right_pad;
     // AERROR << " dst_height: " << dst_height
     //       << " dst_width: " << dst_width
+    //       << " scale: " << scale
+    //       << " img_blob_shape[3]: " << img_blob_shape[3]
+    //       << " img_blob_shape[4]: " << img_blob_shape[4]
     //       << " bottom_pad: " << bottom_pad;
 
     CHECK(dst_height * scale == img_blob_shape[3]);

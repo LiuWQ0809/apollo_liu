@@ -1,5 +1,5 @@
 import numpy as np
-# from mayavi import mlab
+from mayavi import mlab
 import os 
 import pdb
 
@@ -46,7 +46,7 @@ def obtain_points_label(occ):
     points = np.stack(points)
     points_label = occ_cls
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
 
     return points, points_label
@@ -82,7 +82,7 @@ def visualize_occ(points, labels, ego_dict):
     for cls_index in range(num_classes):
         class_point = labels == cls_index
         point_colors[class_point] = cls_index+1 
-
+    mlab.options.offscreen = True
     figure = mlab.figure(size=(1000, 1000), bgcolor=(1, 1, 1))
     lidar_plot = mlab.points3d(x, y, z, point_colors,
                                 scale_factor=voxel_size,
@@ -124,11 +124,13 @@ def visualize_occ(points, labels, ego_dict):
         scene.scene.camera.compute_view_plane_normal()
         scene.scene.render()
 
-    mlab.show()
-    # mlab.savefig('3d_plot.png')
+    # mlab.show()
+    mlab.savefig('3d_plot.png')
+    mlab.close  # 关闭当前图形
+    mlab.options.offscreen = False  # 恢复默认设置
 
 if __name__ == '__main__':
-    occ_path = "/home/liuwq/work/apollo/modules/perception/camera_detection_occupancy/data/occ_results/1535489297.428113.bin"
+    occ_path = "/home/liuwq/work/apollo/modules/perception/camera_detection_occupancy/data/occ_results/0.000000.bin"
     # export DISPLAY=:0
 
     # default setting of the data info

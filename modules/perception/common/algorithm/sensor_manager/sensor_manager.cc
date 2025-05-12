@@ -75,6 +75,7 @@ bool SensorManager::Init() {
           new BrownCameraDistortionModel());
       // Todo(zero): Need change to GetCommonConfigFile
       auto intrinsic_file = IntrinsicPath(sensor_info.frame_id);
+      AERROR << " to load camera intrinsic:" << intrinsic_file;
       if (!LoadBrownCameraIntrinsic(intrinsic_file, distort_model.get())) {
         AERROR << "Failed to load camera intrinsic:" << intrinsic_file;
         return false;
