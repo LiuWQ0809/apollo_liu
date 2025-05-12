@@ -50,8 +50,6 @@ if __name__ == "__main__":
                 "--file_name3",img3, \
                 "--file_name4",img4 \
                 ]
-
-    pdb.set_trace()
             
     # 执行命令并捕获输出
     try:

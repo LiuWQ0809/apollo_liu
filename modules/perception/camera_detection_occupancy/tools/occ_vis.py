@@ -131,7 +131,8 @@ def visualize_occ(points, labels, ego_dict):
 
 if __name__ == '__main__':
     occ_path = "/home/liuwq/work/apollo/modules/perception/camera_detection_occupancy/data/occ_results/0.000000.bin"
-    # export DISPLAY=:0
+    os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
 
     # default setting of the data info
     num_classes = 16
